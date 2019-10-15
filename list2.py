@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import math
+from scipy.spatial import distance
 # make the plot reproducible by setting the seed
 np.random.seed(12)
 
@@ -30,14 +31,14 @@ def generate_data():
     #plt.show()
 train_data = generate_data()
 test_data = generate_data()
-'''ax.scatter3D(train_data[0][0], train_data[0][1], train_data[0][2], c=train_data[0][2], cmap=cmap_colors_train[0]);
-ax.scatter3D(train_data[1][0], train_data[1][1], train_data[1][2], c=train_data[1][2], cmap=cmap_colors_train[1]);
-ax.scatter3D(train_data[2][0], train_data[2][1], train_data[2][2], c=train_data[2][2], cmap=cmap_colors_train[2]);
+'''ax.scatter3D(train_data[0][0], train_data[0][1], train_data[0][2], c=train_data[0][2], cmap=cmap_colors_train[0], label="Class 1");
+ax.scatter3D(train_data[1][0], train_data[1][1], train_data[1][2], c=train_data[1][2], cmap=cmap_colors_train[1], label="Class 2");
+ax.scatter3D(train_data[2][0], train_data[2][1], train_data[2][2], c=train_data[2][2], cmap=cmap_colors_train[2], label="Class 3");
 
 ax.scatter3D(test_data[0][0], test_data[0][1], test_data[0][2], c=test_data[0][2], cmap=cmap_colors_test[0]);
 ax.scatter3D(test_data[1][0], test_data[1][1], test_data[1][2], c=test_data[1][2], cmap=cmap_colors_test[1]);
 ax.scatter3D(test_data[2][0], test_data[2][1], test_data[2][2], c=test_data[2][2], cmap=cmap_colors_test[2]);
-
+plt.legend(loc="lower right", frameon=False)
 plt.show()'''
 
 def maximum_likelihood_gauss(data):
@@ -56,14 +57,18 @@ media_1, covariance_1 = maximum_likelihood_gauss(train_data[0])
 media_2, covariance_2 = maximum_likelihood_gauss(train_data[1])
 media_3, covariance_3 = maximum_likelihood_gauss(train_data[2])
 media_train = np.array([media_1, media_2, media_3])
+covariance_media = (covariance_1+covariance_2+covariance_3)/3
 
 media_1, covariance_1 = maximum_likelihood_gauss(test_data[0])
 media_2, covariance_2 = maximum_likelihood_gauss(test_data[1])
 media_3, covariance_3 = maximum_likelihood_gauss(test_data[2])
 
-
 media_test = np.array([media_1, media_2, media_3])
-#print ("RESULT EXERCISE 1: ", (covariance_1+covariance_2+covariance_3)/3)
+
+print (media_train)
+print (media_test)
+
+print ("RESULT EXERCISE 1: ", (covariance_1+covariance_2+covariance_3)/3)
 
 
 def euclidean_distance(media_test, media_model):
@@ -71,9 +76,23 @@ def euclidean_distance(media_test, media_model):
     m, _, N = media_model.shape
 
     for i in range(N):
-        l = []
+        distances = []
         for j in range(c):
             dist = math.sqrt(math.pow((media_model[i][0][0]-media_test[j][0][0]),2) + math.pow((media_model[i][0][1]-media_test[j][0][1]),2) + math.pow((media_model[i][0][2]-media_test[j][0][2]),2))
-            l.append(dist)
-        print ("class", i+1, ":", min(l))
-euclidean_distance(media_test, media_train)
+            distances.append(dist)
+            print ("media of class", i+1, "with test media class", j+1, ":",  dist)
+        print ("class", i+1, ":", min(distances))
+#euclidean_distance(media_test, media_train)
+
+def mahalanobis_distance(media_test, media_model, covariance):
+    l, _, c = media_test.shape
+    m, _, N = media_model.shape
+    for i in range(N):
+        distances = []
+        for j in range(c):
+            dist = distance.mahalanobis(media_model[i][0], media_test[j][0], covariance)
+            distances.append(dist)
+            print ("media of class", i+1, "with test media class", j+1, ":",  dist)
+        print ("class", i+1, ":", min(distances))
+mahalanobis_distance(media_test, media_train, covariance_media)
+
