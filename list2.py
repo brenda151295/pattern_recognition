@@ -40,6 +40,27 @@ ax.scatter3D(test_data[1][0], test_data[1][1], test_data[1][2], c=test_data[1][2
 ax.scatter3D(test_data[2][0], test_data[2][1], test_data[2][2], c=test_data[2][2], cmap=cmap_colors_test[2]);
 plt.legend(loc="lower right", frameon=False)
 plt.show()'''
+points_c1c2c3 = []
+
+class_1 = test_data[0]
+class_2 = test_data[1]
+class_3 = test_data[2]
+
+points_c1 = []
+for j in range(len(class_1[0])):
+    points_c1.append([class_1[0][j], class_1[1][j], class_1[2][j]])
+points_c1c2c3.append(points_c1)
+
+points_c2 = []
+for j in range(len(class_2[0])):
+    points_c2.append([class_2[0][j], class_2[1][j], class_2[2][j]])
+points_c1c2c3.append(points_c2)
+
+points_c3 = []
+for j in range(len(class_3[0])):
+    points_c3.append([class_3[0][j], class_3[1][j], class_3[2][j]])
+points_c1c2c3.append(points_c3)
+
 
 def maximum_likelihood_gauss(data):
     l, N = data.shape
@@ -71,24 +92,28 @@ media_test = np.array([media_1, media_2, media_3])
 #print ("RESULT EXERCISE 1: ", (covariance_1+covariance_2+covariance_3)/3)
 
 
-def euclidean_distance(data_test, media_model):
+
+
+'''def euclidean_distance_X(data_test, media_model):
     m, _, N = media_model.shape
     for i in range(N):
-        c = len(data_test[i][0])
-        count = 0
-        for j in range(c):
-            distances = []
-            for k in range(N):
-                dist = math.sqrt(math.pow(media_model[k][0][0]-data_test[i][0][j],2) +\
-                    math.pow(media_model[k][0][1]-data_test[i][1][j],2) +\
-                    math.pow(media_model[k][0][2]-data_test[i][2][j],2))
-                distances.append(dist)
-            if i == distances.index(min(distances)):
-                count += 1
-        print ("class", i+1, ":", count)
-euclidean_distance(test_data, media_train)
+            c = len(data_test[i][0])
+            count = 0
+            for j in range(c):
+                distances = []
+                for k in range(N):
+                    dist = math.sqrt(math.pow(media_model[k][0][0]-data_test[i][0][j],2) +\
+                        math.pow(media_model[k][0][1]-data_test[i][1][j],2) +\
+                        math.pow(media_model[k][0][2]-data_test[i][2][j],2))
+                    distances.append(dist)
+                if i == distances.index(min(distances)):
+                    count += 1
+            print ("class", i+1, ":", count)
 
-def mahalanobis_distance(data_test, media_model, covariance):
+euclidean_distance_X(test_data, media_train)'''
+
+
+'''def mahalanobis_distance_X(data_test, media_model, covariance):
     m, _, N = media_model.shape
     for i in range(N):
         c = len(data_test[i][0])
@@ -102,5 +127,40 @@ def mahalanobis_distance(data_test, media_model, covariance):
             if i == distances.index(min(distances)):
                 count += 1
         print ("class", i+1, ":", count)
-mahalanobis_distance(test_data, media_train, covariance_media)
+mahalanobis_distance_X(test_data, media_train, covariance_media)
+'''
+def euclidean_distance(data_test, media_model):
+    m, _, N = media_model.shape
+    for cls in range(N):
+        points = data_test[cls]
+        count = 0
+        for point in points:
+            distances = []
+            for k in range(N):
+                media = media_model[k]
+                dist = math.sqrt(\
+                        math.pow(media[0][0]-point[0],2) +\
+                        math.pow(media[0][1]-point[1],2) +\
+                        math.pow(media[0][2]-point[2],2))
+                distances.append(dist)
+            if cls == distances.index(min(distances)):
+                count += 1
+        print ("class", cls+1, ":", count)
 
+euclidean_distance(points_c1c2c3, media_train)
+
+def mahalanobis_distance(data_test, media_model, covariance):
+    m, _, N = media_model.shape
+    for cls in range(N):
+        points = data_test[cls]
+        count = 0
+        for point in points:
+            distances = []
+            for k in range(N):
+                media = media_model[k]
+                dist = distance.mahalanobis(media[0], point, covariance)
+                distances.append(dist)
+            if cls == distances.index(min(distances)):
+                count += 1
+        print ("class", cls+1, ":", count)
+mahalanobis_distance(points_c1c2c3, media_train, covariance_media)
