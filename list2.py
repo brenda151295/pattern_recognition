@@ -4,6 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import math
 from scipy.spatial import distance
+from sklearn.naive_bayes import GaussianNB
 # make the plot reproducible by setting the seed
 np.random.seed(12)
 
@@ -147,7 +148,7 @@ def euclidean_distance(data_test, media_model):
                 count += 1
         print ("class", cls+1, ":", count)
 
-euclidean_distance(points_c1c2c3, media_train)
+#euclidean_distance(points_c1c2c3, media_train)
 
 def mahalanobis_distance(data_test, media_model, covariance):
     m, _, N = media_model.shape
@@ -163,4 +164,10 @@ def mahalanobis_distance(data_test, media_model, covariance):
             if cls == distances.index(min(distances)):
                 count += 1
         print ("class", cls+1, ":", count)
-mahalanobis_distance(points_c1c2c3, media_train, covariance_media)
+#mahalanobis_distance(points_c1c2c3, media_train, covariance_media)
+
+nb = GaussianNB()
+print (len(points_c1c2c3))
+print (len(media_train))
+nb.fit(points_c1c2c3, media_train)
+print (nb.score(X_test, y_test))
