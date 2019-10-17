@@ -5,6 +5,13 @@ from matplotlib import cm
 import math
 from scipy.spatial import distance
 from sklearn.naive_bayes import GaussianNB
+
+from sklearn.datasets import make_blobs, make_moons, make_regression, load_iris
+from scipy.stats import multivariate_normal
+import matplotlib.pyplot as plt
+import numpy as np
+
+from  sklearn.model_selection import train_test_split
 # make the plot reproducible by setting the seed
 np.random.seed(12)
 
@@ -20,19 +27,72 @@ ax = fig.gca(projection='3d')
 cmap_colors_train = ['Purples', 'Blues', 'Greens']
 cmap_colors_test = ['Reds', 'Greys', 'Oranges']
 quantidade = [333, 334, 333] #Equiprobable
-def generate_data():
+
+class BayesClassifier:
+    
+    mu = None
+    cov = None
+    n_classes = None
+    
+    def __init__(self):
+        a = None
+    
+    def pred(self,x):
+        prob_vect = np.zeros(self.n_classes)
+        
+        for i in range(self.n_classes):
+            
+            
+            mnormal = multivariate_normal(mean=bc.mu[i], cov=bc.cov[i])
+            
+            # We use uniform priors
+            prior = 1./self.n_classes
+            
+            prob_vect[i] = prior*mnormal.pdf(x)
+            sumatory = 0.
+            for j in range(self.n_classes):
+                mnormal = multivariate_normal(mean=bc.mu[j], cov=bc.cov[j])
+                sumatory += prior*mnormal.pdf(x)
+            prob_vect[i] = prob_vect[i]/sumatory
+        return prob_vect
+        
+    def fit(self, X,y):
+        self.mu = []
+        self.cov = []
+        
+        self.n_classes = np.max(y)+1
+        
+        for i in range(self.n_classes):
+            Xc = X[y==i]
+            
+            mu_c = np.mean(Xc, axis=0)
+            self.mu.append(mu_c)
+            
+            cov_c = np.zeros((X.shape[1], X.shape[1]))
+            for j in range( Xc.shape[0]):
+                a = Xc[j].reshape((X.shape[1],1))
+                b = Xc[j].reshape((1,X.shape[1]))
+                cov_ci = np.multiply(a, b)
+                cov_c = cov_c+cov_ci
+            cov_c = cov_c/float(X.shape[0])
+            self.cov.append(cov_c)
+        self.mu = np.asarray(self.mu)
+        self.cov = np.asarray(self.cov)
+
+        print (self.mu)
+        print (self.cov)
+
+def generate_data(N):
     classes = []
-    for i in range(3):
-        # generate normally distributed points to plot
+    for i in range(N):
         mean = mean_array[i]
         classes.append(np.random.multivariate_normal(mean, covariance, quantidade[i]).T)    
     return classes
-        # plot them
-        #surf = ax.scatter3D(X, Y, Z, c=Z, cmap=cmap_colors[i]);
-    #plt.show()
-train_data = generate_data()
-test_data = generate_data()
-'''ax.scatter3D(train_data[0][0], train_data[0][1], train_data[0][2], c=train_data[0][2], cmap=cmap_colors_train[0], label="Class 1");
+
+train_data = generate_data(N=3)
+test_data = generate_data(N=3)
+
+ax.scatter3D(train_data[0][0], train_data[0][1], train_data[0][2], c=train_data[0][2], cmap=cmap_colors_train[0], label="Class 1");
 ax.scatter3D(train_data[1][0], train_data[1][1], train_data[1][2], c=train_data[1][2], cmap=cmap_colors_train[1], label="Class 2");
 ax.scatter3D(train_data[2][0], train_data[2][1], train_data[2][2], c=train_data[2][2], cmap=cmap_colors_train[2], label="Class 3");
 
@@ -40,13 +100,15 @@ ax.scatter3D(test_data[0][0], test_data[0][1], test_data[0][2], c=test_data[0][2
 ax.scatter3D(test_data[1][0], test_data[1][1], test_data[1][2], c=test_data[1][2], cmap=cmap_colors_test[1]);
 ax.scatter3D(test_data[2][0], test_data[2][1], test_data[2][2], c=test_data[2][2], cmap=cmap_colors_test[2]);
 plt.legend(loc="lower right", frameon=False)
-plt.show()'''
+plt.show()
+
 points_c1c2c3 = []
 
 class_1 = test_data[0]
 class_2 = test_data[1]
 class_3 = test_data[2]
 
+#Colocando os pontos em formato de ponto
 points_c1 = []
 for j in range(len(class_1[0])):
     points_c1.append([class_1[0][j], class_1[1][j], class_1[2][j]])
@@ -70,66 +132,22 @@ def maximum_likelihood_gauss(data):
         media += data[:,i]
     media = media/N
     sum_ = np.zeros((l,l))
-    for i in range(N): #N=333
+    for i in range(N): #N=333 ou 334 ou 333
         sum_ += ((data[:,i] - media)* (data[:,i] - media).T)
     covariance = sum_/N
     return media, covariance
 
-media_1, covariance_1 = maximum_likelihood_gauss(train_data[0])
-media_2, covariance_2 = maximum_likelihood_gauss(train_data[1])
-media_3, covariance_3 = maximum_likelihood_gauss(train_data[2])
+media_1, covariance_1_train = maximum_likelihood_gauss(train_data[0])
+media_2, covariance_2_train = maximum_likelihood_gauss(train_data[1])
+media_3, covariance_3_train = maximum_likelihood_gauss(train_data[2])
 media_train = np.array([media_1, media_2, media_3])
-covariance_media = (covariance_1+covariance_2+covariance_3)/3
+covariance_media = (covariance_1_train+covariance_2_train+covariance_3_train)/3
 
 media_1, covariance_1 = maximum_likelihood_gauss(test_data[0])
 media_2, covariance_2 = maximum_likelihood_gauss(test_data[1])
 media_3, covariance_3 = maximum_likelihood_gauss(test_data[2])
 
 media_test = np.array([media_1, media_2, media_3])
-
-#print (media_train)
-#print (media_test)
-
-#print ("RESULT EXERCISE 1: ", (covariance_1+covariance_2+covariance_3)/3)
-
-
-
-
-'''def euclidean_distance_X(data_test, media_model):
-    m, _, N = media_model.shape
-    for i in range(N):
-            c = len(data_test[i][0])
-            count = 0
-            for j in range(c):
-                distances = []
-                for k in range(N):
-                    dist = math.sqrt(math.pow(media_model[k][0][0]-data_test[i][0][j],2) +\
-                        math.pow(media_model[k][0][1]-data_test[i][1][j],2) +\
-                        math.pow(media_model[k][0][2]-data_test[i][2][j],2))
-                    distances.append(dist)
-                if i == distances.index(min(distances)):
-                    count += 1
-            print ("class", i+1, ":", count)
-
-euclidean_distance_X(test_data, media_train)'''
-
-
-'''def mahalanobis_distance_X(data_test, media_model, covariance):
-    m, _, N = media_model.shape
-    for i in range(N):
-        c = len(data_test[i][0])
-        count = 0
-        for j in range(c):
-            distances = []
-            for k in range(N):
-                point = [data_test[i][0][j], data_test[i][1][j], data_test[i][2][j]]
-                dist = distance.mahalanobis(media_model[k][0], point, covariance)
-                distances.append(dist)
-            if i == distances.index(min(distances)):
-                count += 1
-        print ("class", i+1, ":", count)
-mahalanobis_distance_X(test_data, media_train, covariance_media)
-'''
 def euclidean_distance(data_test, media_model):
     m, _, N = media_model.shape
     for cls in range(N):
@@ -148,7 +166,8 @@ def euclidean_distance(data_test, media_model):
                 count += 1
         print ("class", cls+1, ":", count)
 
-#euclidean_distance(points_c1c2c3, media_train)
+print ("ACERTOS - EUCLIDEAN DISTANCE")
+euclidean_distance(points_c1c2c3, media_train)
 
 def mahalanobis_distance(data_test, media_model, covariance):
     m, _, N = media_model.shape
@@ -164,10 +183,46 @@ def mahalanobis_distance(data_test, media_model, covariance):
             if cls == distances.index(min(distances)):
                 count += 1
         print ("class", cls+1, ":", count)
-#mahalanobis_distance(points_c1c2c3, media_train, covariance_media)
 
-nb = GaussianNB()
-print (len(points_c1c2c3))
-print (len(media_train))
-nb.fit(points_c1c2c3, media_train)
-print (nb.score(X_test, y_test))
+print ("ACERTOS - AHALANOBIS")
+mahalanobis_distance(points_c1c2c3, media_train, covariance_media)
+def pred(test_data, media, covariance):
+    n_classes = 3
+    prob_vect = np.zeros(3)
+    for i in range(n_classes):
+        mnormal = multivariate_normal(mean=media[i], cov=covariance[i])
+        # We use uniform priors
+        prior = 1./n_classes
+        
+        prob_vect[i] = prior*mnormal.pdf(test_data)
+        sumatory = 0.
+        for j in range(n_classes):
+            mnormal = multivariate_normal(mean=media[j], cov=covariance[j])
+            sumatory += prior*mnormal.pdf(test_data)
+        prob_vect[i] = prob_vect[i]/sumatory
+    return prob_vect
+
+print ("ACERTOS - BAYES CLASSIFIER")
+media_train = np.array([media_train[0][0], media_train[1][0], media_train[2][0]])
+covariance = np.array([covariance_1_train, covariance_2_train, covariance_3_train])
+
+hit = 0
+for point in points_c1:
+    ypred = pred(point, media_train, covariance)
+    if np.argmax(ypred) == 0:
+        hit += 1
+print ("Class 1:", hit)
+
+hit = 0
+for point in points_c2:
+    ypred = pred(point, media_train, covariance)
+    if np.argmax(ypred) == 1:
+        hit += 1
+print ("Class 2:", hit)
+
+hit = 0
+for point in points_c3:
+    ypred = pred(point, media_train, covariance)
+    if np.argmax(ypred) == 2:
+        hit += 1
+print ("Class 3:", hit)
