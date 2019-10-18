@@ -48,7 +48,6 @@ while np.sum(qtd) < n_samples:
     else:
         qtd[0] = qtd[0] + 1
 
-print (qtd)
 
 def generate_data(N):
     classes = []
@@ -58,6 +57,7 @@ def generate_data(N):
         classes.append(np.random.multivariate_normal(mean, covariance, qtd[i]).T)    
     return classes
 
+#GERACAO DE DADOS
 classes = generate_data(N=3)
 points_c1c2c3_separated = []
 points_c1c2c3_tog = []
@@ -69,58 +69,93 @@ for classe in classes:
     points_c1c2c3_separated.append(temp)
 points_c1c2c3_tog = np.asarray(points_c1c2c3_tog)
 
-'''cmap_colors = ['Purples', 'Blues', 'Greens']
+X = points_c1c2c3_tog
+
+x,y = np.meshgrid(np.sort(points_c1c2c3_tog[:,0]),np.sort(points_c1c2c3_tog[:,1]))
+XY = np.array([x.flatten(),y.flatten()]).T
+
+#PLOT PONTOS 
+cmap_colors = ['Purples', 'Blues', 'Greens']
 plt.scatter(classes[0][0], classes[0][1], cmap=cmap_colors[0], label="Class 1")
 plt.scatter(classes[1][0], classes[1][1], cmap=cmap_colors[1], label="Class 2")
 plt.scatter(classes[2][0], classes[2][1], cmap=cmap_colors[2], label="Class 3")
 
 plt.legend(loc="lower right", frameon=False)
-plt.show()'''
 
-covariance_array_ini = [[
-        [0.15, 0],
-        [0, 0.15],
-    ],[
-        [0.27, 0],
-        [0, 0.27],
-    ],[
-        [0.4, 0],
-        [0, 0.4],
-    ],
-    ]
+#PLOT GAUSSIANS ORIGINAS
+fig = plt.figure(figsize=(10,10))
+ax0 = fig.add_subplot(111)
+ax0.scatter(points_c1c2c3_tog[:,0],points_c1c2c3_tog[:,1])
+for m,c in zip(mean_array, covariance_array):
+    multi_normal = multivariate_normal(mean=m,cov=c)
+    ax0.contour(np.sort(points_c1c2c3_tog[:,0]),np.sort(points_c1c2c3_tog[:,1]),multi_normal.pdf(XY).reshape(len(X),len(X)),colors='black',alpha=0.3)
+    ax0.scatter(m[0],m[1],c='grey',zorder=10,s=100)
+
+
+#PARAMETROS INICIAS (A)
 mean_array_ini = np.array([[0, 2], [5, 2], [5, 5]])
 P_ini = [1/3., 1/3., 1/3.]
-X = points_c1c2c3_tog
-
-x,y = np.meshgrid(np.sort(points_c1c2c3_tog[:,0]),np.sort(points_c1c2c3_tog[:,1]))
-XY = np.array([x.flatten(),y.flatten()]).T
 covars = [0.15, 0.27, 0.4]
 
-#GMM = GaussianMixture(n_components=3, means_init=mean_array_ini, reg_covar=[0.15, 0.27, 0.4]).fit(X) # Instantiate and fit the model
 models = []
 for covariance in covars:
     model = GaussianMixture(n_components=3, means_init=mean_array_ini,
-              reg_covar=covariance, max_iter=20, random_state=0).fit(X)
-    models.append(model)
-
-for GMM in models:
-    print('Converged:',GMM.converged_) # Check if the model has converged
+              reg_covar=covariance, max_iter=100, random_state=0, weights_init=P_ini).fit(X)
+    models.append([covariance, model])
+count = 0
+media = []
+covariance = []
+for cov, GMM in models:
     means = GMM.means_ 
-    covariances = GMM.covariances_
-    # Predict
-    #Y = np.array([[0.5],[0.5]])
-    #prediction = GMM.predict_proba(Y.T)
-    #print(prediction)
-    # Plot   
-    fig = plt.figure(figsize=(10,10))
-    ax0 = fig.add_subplot(111)
-    ax0.scatter(points_c1c2c3_tog[:,0],points_c1c2c3_tog[:,1])
-    #ax0.scatter(Y[0,:],Y[1,:],c='orange',zorder=10,s=100)
-    for m,c in zip(means,covariances):
-        print (m)
-        print (c)
-        multi_normal = multivariate_normal(mean=m,cov=c)
-        ax0.contour(np.sort(points_c1c2c3_tog[:,0]),np.sort(points_c1c2c3_tog[:,1]),multi_normal.pdf(XY).reshape(len(X),len(X)),colors='black',alpha=0.3)
-        ax0.scatter(m[0],m[1],c='grey',zorder=10,s=100)
-    
+    covariances = GMM.covariances_  
+    media.append(means[count])
+    covariance.append(covariances[count])
+    count += 1
+
+#PLOT
+fig = plt.figure(figsize=(10,10))
+ax0 = fig.add_subplot(111)
+ax0.scatter(points_c1c2c3_tog[:,0],points_c1c2c3_tog[:,1])
+print ("PERGUNTA 2A")
+for m,c in zip(media, covariance):
+    print (m)
+    print (c)
+    multi_normal = multivariate_normal(mean=m,cov=c)
+    ax0.contour(np.sort(points_c1c2c3_tog[:,0]),np.sort(points_c1c2c3_tog[:,1]),multi_normal.pdf(XY).reshape(len(X),len(X)),colors='black',alpha=0.3)
+    ax0.scatter(m[0],m[1],c='grey',zorder=10,s=100)
+
+
+#PARAMETROS ALEATORIOS - GENERADOS (B)
+mean_array_ini_ger = np.array([[5, 8], [7, 2], [3, 3]])
+P_ini_ger = [1/3., 1/3., 1/3.]
+covars_ger = [0.2, 0.3, 0.1]
+
+models = []
+for covar in covars_ger:
+    model = GaussianMixture(n_components=3, means_init=mean_array_ini,
+              reg_covar=covar, max_iter=100, random_state=0, weights_init=P_ini).fit(X)
+    models.append([covar, model])
+
+count = 0
+media_ger = []
+covariance_ger = []
+for cov, GMM in models:
+    means = GMM.means_ 
+    covariances = GMM.covariances_ 
+    media_ger.append(means[count])
+    covariance_ger.append(covariances[count])
+    count += 1
+
+#PLOT
+fig = plt.figure(figsize=(10,10))
+ax0 = fig.add_subplot(111)
+ax0.scatter(points_c1c2c3_tog[:,0],points_c1c2c3_tog[:,1])
+print ("PERGUNTA 2B")
+for m,c in zip(media_ger, covariance_ger):
+    print (m)
+    print (c)
+    multi_normal = multivariate_normal(mean=m,cov=c)
+    ax0.contour(np.sort(points_c1c2c3_tog[:,0]),np.sort(points_c1c2c3_tog[:,1]),multi_normal.pdf(XY).reshape(len(X),len(X)),colors='black',alpha=0.3)
+    ax0.scatter(m[0],m[1],c='grey',zorder=10,s=100)
+
 plt.show()
