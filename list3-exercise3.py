@@ -6,7 +6,11 @@ import numpy as np
 import scipy.optimize
 import scipy.stats
 from quadprog import solve_qp
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.colors import LogNorm
+from matplotlib import cm
+from matplotlib import rcParams
 
 def solve_qp_scipy(G, a, C, b, meq=0):
     # Minimize     1/2 x^T G x - a^T x
@@ -35,36 +39,37 @@ def verify(G, a, C=None, b=None):
     np.testing.assert_array_almost_equal(result.fun, f)
     print (result)
 
-def test_1():
-    G = np.eye(3, 3)
-    a = np.array([0, 5, 0], dtype=np.double)
-    C = np.array([[-4, 2, 0], [-3, 1, -2], [0, 0, 1]], dtype=np.double)
-    b = np.array([-8, 2, 0], dtype=np.double)
-    xf, f, xu, iters, lagr, iact = solve_qp(G, a, C, b)
-    np.testing.assert_array_almost_equal(xf, [0.4761905, 1.0476190, 2.0952381])
-    np.testing.assert_almost_equal(f, -2.380952380952381)
-    np.testing.assert_almost_equal(xu, [0, 5, 0])
-    np.testing.assert_array_equal(iters, [3, 0])
-    np.testing.assert_array_almost_equal(lagr, [0.0000000, 0.2380952, 2.0952381])
+def main():
+    
+    fig = plt.figure()
+    ax = Axes3D(fig, azim = -29, elev = 49)
+    X = np.arange(-6, 6, 0.1)
+    Y = np.arange(-6, 6, 0.1)
 
+    X, Y = np.meshgrid(X, Y)
+
+    Z = X + Y**2
+    ax.plot_surface(X, Y, Z, rstride = 1, cstride = 1, cmap = cm.jet)
+
+    plt.xlabel("x")
+    plt.ylabel("y")
+
+    rcParams['font.size'] = 12
+
+    fig = plt.figure(figsize=(5, 5))
+    levels = np.logspace(0.3, 3.5, 15)
+    plt.contour(X, Y, Z, levels, cmap="viridis")
+    plt.xlabel(r"$x$", fontsize=14)
+    plt.ylabel(r"$y$", fontsize=14)
+    plt.xticks([-6, -3, 0, 3, 6])
+    plt.yticks([-6, -3, 0, 3, 6])
+    plt.xlim([-6, 6])
+    plt.ylim([-6, 6])
+    plt.show()
+
+    G = np.array([[1, 0], [0, 2]], dtype=np.double)
+    a = np.array([1., 0.])
+    C = np.array([[1, 2], [1, 0]], dtype=np.double)
+    b = np.array([2, 1], dtype=np.double)
     verify(G, a, C, b)
-
-
-def test_2():
-    G = np.eye(3, 3)
-    a = np.array([0, 0, 0], dtype=np.double)
-    C = np.ones((3, 1))
-    b = -1000 * np.ones(1)
-    verify(G, a, C, b)
-    verify(G, a)
-
-
-def test_3():
-    random = np.random.RandomState(0)
-    G = scipy.stats.wishart(scale=np.eye(3, 3), seed=random).rvs()
-    a = random.randn(3)
-    C = random.randn(3, 2)
-    b = random.randn(2)
-    verify(G, a, C, b)
-    verify(G, a)
-test_1()
+main()
