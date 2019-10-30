@@ -67,7 +67,7 @@ def main():
     plt.ylim([-6, 6])
     plt.show()
 
-    G = np.array([[1, 0], [0, 2]], dtype=np.double)
+    G = np.array([[0, 0], [0, 2]], dtype=np.double)
     a = np.array([1., 0.])
     C = np.array([[1, 2], [1, 0]], dtype=np.double)
     b = np.array([2, 1], dtype=np.double)

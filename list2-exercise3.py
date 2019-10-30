@@ -45,12 +45,12 @@ covariance = [
 
 data_1 = generate_data(N=2, n_samples = 500)
 data_2 = generate_data(N=2, n_samples = 5000)
-
+'''
 x_grid_1 = np.linspace(-4.5, 3.5, 500)
 np.random.seed(0)
 
 fig, ax = plt.subplots()
-
+#h = 0.05 N = 500
 ax.plot(x_grid_1, kde_sklearn(data_1, x_grid_1, bandwidth=0.05),
             label='bw={0}'.format(0.05), linewidth=3, alpha=0.5)
 ax.hist(data_1, 30, fc='gray', histtype='stepfilled', alpha=0.3, normed=True)
@@ -60,24 +60,17 @@ ax.legend(loc='upper left')
 
 fig, ax = plt.subplots()
 x_grid_2 = np.linspace(-4.5, 3.5, 5000)
+#h = 0.5 N = 5000
 ax.plot(x_grid_2, kde_sklearn(data_2, x_grid_2, bandwidth=0.2),
             label='bw={0}'.format(0.2), linewidth=3, alpha=0.5)
 ax.hist(data_2, 30, fc='gray', histtype='stepfilled', alpha=0.3, normed=True)
 ax.set_xlim(-5.5, 5.5)
 ax.legend(loc='upper left')
 
-#plt.show()
-
+'''
 
 data_3 = generate_data(N=2, n_samples = 1000)
 k = 21
-
-MU = np.zeros(2)
-COV = np.eye(2)
-
-def getData(size):
-    data = np.random.multivariate_normal(MU, COV, size)
-    return data
 
 def area(data):
     size = 40
@@ -103,12 +96,8 @@ def knn(data, k):
             else:
                 knnpdf[i,j] = k/(1000*v)
     return X, knnpdf
-   
-pos = 1
 
-
-data = data_3
-X,P = knn(data, k)
+X,P = knn(data_3, k)
 
 fig, ax = plt.subplots()
 ax.plot(X[0], P,
