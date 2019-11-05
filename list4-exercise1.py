@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from sklearn import svm
+from sklearn.svm import SVC
 
 mean_array = np.array([[0, 0], [1.5, 1.5]])
 covariance = [
@@ -28,69 +29,43 @@ data, labels = generate_data()
 points_data = list(zip(*data))
 
 np.random.seed(100)
-data_test, labels = generate_data()
+data_test, labels_test = generate_data()
+points_data_test = list(zip(*data_test))
 
 plt.scatter(points_data[0], points_data[1], cmap=cmap_colors[0], label="Train data")
+plt.scatter(points_data_test[0], points_data_test[1], cmap=cmap_colors[0], label="Test data")
 
 
 plt.legend(loc="lower right", frameon=False)
 #plt.show()
+C = [0.1, 0.2, 0.5, 1.0, 2.0, 20.0]
+for c in C:
+    clf = SVC(kernel='linear', tol=0.001, C=c)
+    clf.fit(data, labels) 
+    r = clf.score(data_test, labels_test, sample_weight=None)
+    print ("C =", str(c), ":", r)
+    print (len(clf.support_vectors_))
+    
+    #print (margin)
+    w_norm = np.linalg.norm(clf.coef_)
+    dist = 2. / w_norm
+    print (dist)
 
-#clf = svm.SVC(gamma='scale', tol=0.001, C=0.1)
-# figure number
-fignum = 1
-
-# fit the model
-for name, penalty in (('unreg', 1), ('reg', 0.05)):
-    clf = svm.SVC(kernel='linear', C=penalty)
-
-    clf.fit(data, labels)
-
-    # get the separating hyperplane
+    margin = 1 / np.sqrt(np.sum(clf.coef_ ** 2))
     w = clf.coef_[0]
     a = -w[0] / w[1]
     xx = np.linspace(-5, 5)
     yy = a * xx - (clf.intercept_[0]) / w[1]
-
-    # plot the parallels to the separating hyperplane that pass through the
-    # support vectors (margin away from hyperplane in direction
-    # perpendicular to hyperplane). This is sqrt(1+a^2) away vertically in
-    # 2-d.
-    margin = 1 / np.sqrt(np.sum(clf.coef_ ** 2))
     yy_down = yy - np.sqrt(1 + a ** 2) * margin
     yy_up = yy + np.sqrt(1 + a ** 2) * margin
-
-    # plot the line, the points, and the nearest vectors to the plane
-    plt.figure(fignum, figsize=(4, 3))
+    plt.figure(figsize=(4, 3))
     plt.clf()
     plt.plot(xx, yy, 'k-')
     plt.plot(xx, yy_down, 'k--')
     plt.plot(xx, yy_up, 'k--')
-
     plt.scatter(clf.support_vectors_[:, 0], clf.support_vectors_[:, 1], s=80,
                 facecolors='none', zorder=10, edgecolors='k')
     plt.scatter(data[:, 0], data[:, 1], c=labels, zorder=10, cmap=plt.cm.Paired,
-                edgecolors='k')
-
-    plt.axis('tight')
-    x_min = -4.8
-    x_max = 4.2
-    y_min = -6
-    y_max = 6
-
-    XX, YY = np.mgrid[x_min:x_max:200j, y_min:y_max:200j]
-    Z = clf.predict(np.c_[XX.ravel(), YY.ravel()])
-
-    # Put the result into a color plot
-    Z = Z.reshape(XX.shape)
-    plt.figure(fignum, figsize=(4, 3))
-    plt.pcolormesh(XX, YY, Z, cmap=plt.cm.Paired)
-
-    plt.xlim(x_min, x_max)
-    plt.ylim(y_min, y_max)
-
-    plt.xticks(())
-    plt.yticks(())
-    fignum = fignum + 1
+                    edgecolors='k')
 
 plt.show()
