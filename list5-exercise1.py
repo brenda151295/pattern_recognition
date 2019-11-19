@@ -19,7 +19,7 @@ def plot_svc_decision_function(model, ax=None, plot_support=True, title=None):
     
     # plot decision boundary and margins
     ax.contour(X, Y, P, colors=['k','r','k'],
-               levels=[-1, 0, 1], alpha=0.8,
+               levels=[-.5, 0, .5], alpha=0.8,
                linestyles=['--', '-', '--'])
     
     # plot support vectors
@@ -81,8 +81,12 @@ plt.scatter(points_data_test[0], points_data_test[1], c = labels_test)
 print ("Exercise 1b")
 clf = SVC(kernel='linear', tol=0.001, C=2)
 clf.fit(points, labels) 
+
+r = clf.score(points, labels, sample_weight=None)
+print ("Train accuracy C = 2:", r)
 r = clf.score(points_test, labels_test, sample_weight=None)
-print ("C = 2:", r)
+print ("Test accuracy C = 2:", r)
+
 print ("# support vectors = ", len(clf.support_vectors_))
 
 #print (margin)
@@ -112,29 +116,34 @@ plt.show()
 print ("Exercise 1c")
 gamma=[0.1, 2.0]
 for g in gamma:
-    clf = SVC(kernel='rbf', tol=0.001, C=2, gamma=g)
+    clf = SVC(kernel='rbf', tol=0.001, C=2, gamma=1./g)
     clf.fit(points, labels) 
+    r = clf.score(points, labels, sample_weight=None)
+    print ("Train accuracy - gamma =", str(g), ":", r)
     r = clf.score(points_test, labels_test, sample_weight=None)
-    print ("gamma =", str(g), ":", r)
+    print ("Test accuracy - gamma =", str(g), ":", r)
     print ("# support vectors = ", len(clf.support_vectors_))
 
     '''plt.scatter(clf.support_vectors_[:, 0], clf.support_vectors_[:, 1], s=80,
                 facecolors='none', zorder=10)
     plt.scatter(points_test[:, 0], points_test[:, 1], c=labels_test, zorder=10)
-    plot_svc_decision_function(clf, title='SVM - RBF / gamma = '+str(g))
+    plot_svc_decision_function(clf, title='SVM - RBF / Sigma = '+str(g))
     plt.show()'''
 
 print ("Exercise 1d")
 print ("SVM - RBF")
 C = [0.2, 20, 200]
 for c in C:
-    clf = SVC(kernel='rbf', tol=0.001, C=c, gamma=1.5)
+    clf = SVC(kernel='rbf', tol=0.001, C=c, gamma=1/1.5)
     clf.fit(points, labels) 
+    
+    r = clf.score(points, labels, sample_weight=None)
+    print ("Train accuracy - C =", str(c), ":", r)
     r = clf.score(points_test, labels_test, sample_weight=None)
-    print ("C =", str(c), ":", r)
+    print ("Test accuracy - C =", str(c), ":", r)
     print ("# support vectors = ", len(clf.support_vectors_))
 
-    plt.clf()
+    '''plt.clf()
 
     plt.scatter(clf.support_vectors_[:, 0], clf.support_vectors_[:, 1], s=80,
                 facecolors='none', zorder=10)
@@ -142,15 +151,17 @@ for c in C:
 
     plot_svc_decision_function(clf, title='SVM - RBF / C = '+str(c))
 
-    plt.show()
+    plt.show()'''
 
 print ("SVM - Polynomial")
 
 for c in C:
-    clf = SVC(kernel='poly', tol=0.001, C=c, degree=3, gamma=1)
+    clf = SVC(kernel='poly', tol=0.001, C=c, degree=3, coef0=1)
     clf.fit(points, labels) 
+    r = clf.score(points, labels, sample_weight=None)
+    print ("Train accuracy - C =", str(c), ":", r)
     r = clf.score(points_test, labels_test, sample_weight=None)
-    print ("C =", str(c), ":", r)
+    print ("Test accuracy - C =", str(c), ":", r)
     print ("# support vectors = ", len(clf.support_vectors_))
 
     plt.clf()

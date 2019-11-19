@@ -4,6 +4,11 @@ from matplotlib import cm
 
 from sklearn import tree
 
+from IPython.display import Image  
+from sklearn.tree import export_graphviz
+import pydotplus
+from io import StringIO
+
 def generate_data(covariance, mean_array, quantidade, labels):
     classes = []
     labels_out = []
@@ -69,20 +74,51 @@ Y_test = np.concatenate((labels_1, labels_2, labels_3), axis=0)
 points_data = list(zip(*X_train))
 points_data_test = list(zip(*X_test))
 
-plt.suptitle('Train data', fontsize=16)
+'''plt.suptitle('Train data', fontsize=16)
 plt.scatter(points_data[0], points_data[1], c = Y_train)
 plt.show()
 plt.suptitle('Test data', fontsize=16)
 plt.scatter(points_data_test[0], points_data_test[1], c = Y_test)
-plt.show()
-
+plt.show()'''
 
 clf = tree.DecisionTreeClassifier()
 clf = clf.fit(X_train, Y_train)
-tree.plot_tree(clf) 
-#plt.show()
+dot_data = StringIO()
+export_graphviz(clf, out_file=dot_data,  
+                filled=True, rounded=True,
+                special_characters=True)
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+Image(graph.create_png())
+graph.write_pdf("tree.pdf")
 
+
+#tree.plot_tree(clf) 
+#plt.show()
+depth_original = clf.get_depth()
+print ("Depth tree:", depth_original)
 r = clf.score(X_train, Y_train)
 print ("Train accuracy:", r)
 r = clf.score(X_test, Y_test)
 print ("Test accuracy:", r)
+
+# depth of original tree is 16
+
+depth = [16,15,14,13,12,11,10,9,8,7,6,5]
+for d in depth:
+    clf = tree.DecisionTreeClassifier(max_depth=d)
+    clf = clf.fit(X_train, Y_train)
+    dot_data = StringIO()
+    export_graphviz(clf, out_file=dot_data,  
+                    filled=True, rounded=True,
+                    special_characters=True)
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+    Image(graph.create_png())
+    graph.write_pdf("tree"+str(depth_original-d)+".pdf")
+    #tree.plot_tree(clf) 
+    #plt.show()
+    print ("N = ", depth_original-d)
+    r = clf.score(X_train, Y_train)
+    print ("Train accuracy:", r)
+    r = clf.score(X_test, Y_test)
+    print ("Test accuracy:", r)
+
