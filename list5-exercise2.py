@@ -86,7 +86,8 @@ clf = clf.fit(X_train, Y_train)
 dot_data = StringIO()
 export_graphviz(clf, out_file=dot_data,  
                 filled=True, rounded=True,
-                special_characters=True)
+                special_characters=True,
+                class_names=list(map(str,list(Y_train))))
 graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
 Image(graph.create_png())
 graph.write_pdf("tree.pdf")
@@ -110,7 +111,8 @@ for d in depth:
     dot_data = StringIO()
     export_graphviz(clf, out_file=dot_data,  
                     filled=True, rounded=True,
-                    special_characters=True)
+                    special_characters=True,
+                    class_names=list(map(str,list(Y_train))))
     graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
     Image(graph.create_png())
     graph.write_pdf("tree"+str(depth_original-d)+".pdf")
