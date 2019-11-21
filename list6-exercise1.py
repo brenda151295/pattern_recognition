@@ -43,11 +43,9 @@ points_data = list(zip(*X_train))
 plt.suptitle('Train data', fontsize=16)
 plt.scatter(points_data[0], points_data[1])
 plt.show()
-
 n_clusters = [4, 3, 5]
 for n in n_clusters:
-    random_state = 50
-    kmeans = KMeans(n_clusters=n, random_state=random_state)
+    kmeans = KMeans(n_clusters=n, random_state=None)
     y_pred = kmeans.fit_predict(X_train)
     centers = kmeans.cluster_centers_
     print (centers)
@@ -55,3 +53,14 @@ for n in n_clusters:
     plt.scatter(centers[:, 0], centers[:, 1], c='r')
     plt.title("Clusters="+str(n))
     plt.show()
+
+init = np.array([[-2,-2],[-2.1,-2.1],[-2,-2.2],[-2.1,-2.2]], np.float64)
+kmeans = KMeans(n_clusters=4, random_state=None, init=init)
+y_pred = kmeans.fit_predict(X_train)
+centers = kmeans.cluster_centers_
+print (centers)
+plt.scatter(X_train[:, 0], X_train[:, 1], c=y_pred)
+plt.scatter(centers[:, 0], centers[:, 1], c='r')
+plt.title("Clusters = 4 - Centers initialized")
+plt.show()
+     
