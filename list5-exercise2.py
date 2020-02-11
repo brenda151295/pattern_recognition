@@ -71,6 +71,7 @@ data_3, labels_3 = generate_data(covariance_3, mean_array_3, quantidade_3, label
 X_test = np.concatenate((data_1, data_2, data_3), axis=0)
 Y_test = np.concatenate((labels_1, labels_2, labels_3), axis=0)
 
+
 points_data = list(zip(*X_train))
 points_data_test = list(zip(*X_test))
 
@@ -87,11 +88,11 @@ dot_data = StringIO()
 export_graphviz(clf, out_file=dot_data,  
                 filled=True, rounded=True,
                 special_characters=True,
-                class_names=list(map(str,list(Y_train))))
+                class_names=['0','1','2'],#ist(map(str,list(Y_train))),
+                proportion = False)
 graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
 Image(graph.create_png())
 graph.write_pdf("tree.pdf")
-
 
 #tree.plot_tree(clf) 
 #plt.show()
@@ -112,7 +113,7 @@ for d in depth:
     export_graphviz(clf, out_file=dot_data,  
                     filled=True, rounded=True,
                     special_characters=True,
-                    class_names=list(map(str,list(Y_train))))
+                    class_names=['0','1','2'])#list(map(str,list(Y_train))))
     graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
     Image(graph.create_png())
     graph.write_pdf("tree"+str(depth_original-d)+".pdf")
