@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.cluster import KMeans
+from sklearn_extensions.fuzzy_kmeans import FuzzyKMeans
 from sklearn.datasets import make_blobs
 
 def generate_data(covariance, mean_array, quantidade, labels):
@@ -36,10 +37,13 @@ covariance_1 = [[
         [0.3, 0.2],
         [0.2, 0.5],
     ]]
+
 quantidade_1 = [100, 100, 100, 100]
 X_train, labels_1 = generate_data(covariance_1, mean_array_1, quantidade_1, labels=[0,1,2,3])
 points_data = list(zip(*X_train))
 
+
+'''
 plt.suptitle('Train data', fontsize=16)
 plt.scatter(points_data[0], points_data[1])
 plt.show()
@@ -64,3 +68,26 @@ plt.scatter(centers[:, 0], centers[:, 1], c='r')
 plt.title("Clusters = 4 - Centers initialized")
 plt.show()
      
+
+init = np.array([np.random.rand(1,2)[0],np.random.rand(1,2)[0],np.random.rand(1,2)[0],[20,20]], np.float64)
+kmeans = KMeans(n_clusters=4, random_state=None, init=init)
+y_pred = kmeans.fit_predict(X_train)
+centers = kmeans.cluster_centers_
+print (centers)
+print (y_pred)
+plt.scatter(X_train[:, 0], X_train[:, 1], c=y_pred)
+plt.scatter(centers[:, 0], centers[:, 1], c='r')
+plt.title("Clusters = 4 - 3 Centers initialized and 1 in [20 20]")
+plt.show()'''
+
+
+n_clusters = [4, 3, 5]
+for n in n_clusters:
+    fuzzy_kmeans = FuzzyKMeans(k=n, m=2)
+    fuzzy_kmeans.fit(X_train)
+    centers = fuzzy_kmeans.cluster_centers_
+    print (centers)
+    plt.scatter(X_train[:, 0], X_train[:, 1])
+    plt.scatter(centers[:, 0], centers[:, 1], c='r')
+    plt.title("Clusters="+str(n))
+    plt.show()
