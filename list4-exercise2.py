@@ -83,7 +83,12 @@ print ("(2) Logistic Regression accuracy:", clf.score(data_test, labels_test))
 print ("# Correct (class 0): ", list(clf.predict(data_test)[:1500]).count(0))
 print ("# Correct (class 1): ", list(clf.predict(data_test)[1500:]).count(1))
 
-clf = LogisticRegression(random_state=0, solver='liblinear', C=0.18).fit(data, labels)
-print ("(2) Logistic Regression Regularization accuracy:", clf.score(data_test, labels_test))
-print ("# Correct (class 0): ", list(clf.predict(data_test)[:1500]).count(0))
-print ("# Correct (class 1): ", list(clf.predict(data_test)[1500:]).count(1))
+C = [0.1, 0.18, 0.5, 0.8]
+print ("(2) Logistic Regression Regularization")
+for c in C:
+	clf = LogisticRegression(random_state=0, solver='liblinear', C=c).fit(data, labels)
+	print ("C = ",c)
+	print ("Accuracy Test:", clf.score(data_test, labels_test))
+	print ("Accuracy Train:", clf.score(data, labels))
+	print ("# Correct (class 0): ", list(clf.predict(data_test)[:1500]).count(0))
+	print ("# Correct (class 1): ", list(clf.predict(data_test)[1500:]).count(1))
