@@ -1,42 +1,55 @@
- ## This demo:
- ##    - classifies a small set of unlabeled data points using
- ##      the Fuzzy C-Means algorithm into two fuzzy clusters
- ##    - plots the input points together with the cluster centers
- ##    - evaluates the quality of the resulting clusters using
- ##      three validity measures: the partition coefficient, the
- ##      partition entropy, and the Xie-Beni validity index
- ##
- ## Note: The input_data is taken from Chapter 13, Example 17 in
- ##       Fuzzy Logic: Intelligence, Control and Information, by
- ##       J. Yen and R. Langari, Prentice Hall, 1999, page 381
- ##       (International Edition). 
+clear all
+close all
+clc
 
- ## Use fcm to classify the input_data.
- pkg load fuzzy-logic-toolkit 
- input_data = [2 12; 4 9; 7 13; 11 5; 12 7; 14 4];
- number_of_clusters = 2;
- [cluster_centers, soft_partition, obj_fcn_history] = fcm (input_data, number_of_clusters)
- 
- ## Plot the data points as small blue x's.
- figure ('NumberTitle', 'off', 'Name', 'FCM Demo 1');
- for i = 1 : rows (input_data)
-   plot (input_data(i, 1), input_data(i, 2), 'LineWidth', 2, 'marker', 'x', 'color', 'b');
-   hold on;
- endfor
+N = 200;
 
- ## Plot the cluster centers as larger red *'s.
- for i = 1 : number_of_clusters
-   plot (cluster_centers(i, 1), cluster_centers(i, 2), 'LineWidth', 4, 'marker', '*', 'color', 'r');
-   hold on;
- endfor
+theta = linspace(0,2*pi,N);
+x1 = 3*(sin(theta) + 0.1*rand(1,N));
+y1 = 3*(cos(theta) + 0.1*rand(1,N));  
 
- ## Make the figure look a little better:
- ##    - scale and label the axes
- ##    - show gridlines
- xlim ([0 15]);
- ylim ([0 15]);
- xlabel ('Feature 1');
- ylabel ('Feature 2');
- grid
- hold
- 
+
+theta2 = linspace(0,2*pi,N);
+x2 = 6*(sin(theta2) + 0.1*rand(1,N))-1;
+y2 = 6*(cos(theta2) + 0.1*rand(1,N))-1;  
+
+sz = 4;
+
+#scatter (x1, y1, sz,'r');
+#hold on
+#scatter (x2, y2, sz,'b');
+
+X = [x1 x2]';
+Y = [y1 y2]';
+
+data = [X Y]';
+figure(1)
+plot(data(1,1:N),data(2,1:N),'mo')
+hold on
+plot(data(1,N+1:end),data(2,N+1:end),'gs')
+
+#scatter (X, Y, sz,'g');
+#hold on 
+
+ep=[0.5 1.5 2.5];
+sigma=[1 2 3];
+
+figure(2)
+count=1;
+for k=1:length(ep)
+    for z=1:length(sigma)
+        subplot(3,3,count)
+        hold on
+        bel(k,z,:)=spectral_Ncut2(data,ep(k),sigma(z));
+        for p=1:size(bel,3)
+            if bel(k,z,p)==0
+                plot(data(1,p),data(2,p),'mo')
+            else
+                plot(data(1,p),data(2,p),'gs')
+            end
+        end   
+        titulo=sprintf('ep = %f || sigma = %f', ep(k), sigma(z));
+        title(titulo);
+        count=count+1;
+    end
+end
